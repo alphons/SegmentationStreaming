@@ -34,7 +34,7 @@ After this, the script loads the m3u8 file on a regular basis (once every second
 
 When experiencing a 404 (not found), the script terminates.
 
-The javascript is programmed Asynchronous.
+The javascript is programmed asynchronous.
 
 ```javascript
 'use strict';
