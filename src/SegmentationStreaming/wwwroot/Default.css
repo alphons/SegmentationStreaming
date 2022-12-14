@@ -1,0 +1,129 @@
+html
+{
+	box-sizing: border-box;
+}
+
+*, *:before, *:after
+{
+	box-sizing: inherit;
+}
+
+body
+{
+	line-height: 1;
+	font-family: Arial;
+	padding: 20px;
+	overflow-x: auto;
+}
+
+a
+{
+	text-decoration: none;
+	color: dimgrey;
+}
+
+	a:hover
+	{
+		color: #444;
+	}
+
+#NetProxySpinner
+{
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	margin-top: -25px;
+	margin-left: -25px;
+	z-index: 1;
+}
+
+.hideMe
+{
+	display: none;
+}
+
+.stopfloating
+{
+	clear: both;
+}
+
+.Error
+{
+	color: red;
+}
+
+.Flexing
+{
+	display: flex;
+	flex-wrap: wrap;
+}
+
+#video
+{
+	awidth: 640px;
+	aheight: 480px;
+}
+
+video::-webkit-media-controls-timeline
+{
+	adisplay:none;
+}
+
+video::-webkit-media-controls-current-time-display
+{
+	adisplay: none;
+}
+
+video::-webkit-media-controls-time-remaining-display
+{
+	adisplay: none;
+}
+
+.Hidden
+{
+	display: none;
+}
+
+
+
+
+.TableNormal
+{
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+	padding: 4px;
+	min-width: 600px;
+}
+
+	.TableNormal td, .TableNormal th
+	{
+		border: 1px solid #ddd;
+		padding: 8px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		height: 26px;
+	}
+
+	.TableNormal tr:nth-child(even)
+	{
+		background-color: #f2f2f2;
+	}
+
+	.TableNormal th
+	{
+		padding-top: 12px;
+		padding-bottom: 12px;
+		text-align: left;
+		background-color: #4CAF50;
+		color: white;
+	}
+
+	.TableNormal tr:hover
+	{
+		background-color: #c0c0ff;
+		cursor: pointer;
+	}
