@@ -6,7 +6,7 @@ Smallest live video streaming javascript
 For making segments from a video/audio source the following ffmpeg command line can be used:
 
 ```
-ffmpeg -i "..." -c copy -flags -global_header -hls_time 4 -hls_list_size 5 -master_pl_publish_rate 1 -hls_flags delete_segments -hls_segment_type fmp4 -hls_segment_filename "r:/KEY%d.m4s" -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
+ffmpeg -re -i "..." -c copy -flags -global_header -hls_time 4 -hls_list_size 5 -master_pl_publish_rate 1 -hls_flags delete_segments -hls_segment_type fmp4 -hls_segment_filename "r:/KEY%d.m4s" -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
 ```
 
 When using mpeg source this produce segments of data which can be served bij a webserver.
@@ -98,4 +98,23 @@ async function PlayAsync(m3u8)
 }
 ```
 
+Demo html page
 
+```html
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Just Testing de Segway</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta charset="utf-8" />
+
+	<link href="SegPlayer.css" rel="stylesheet" />
+	<script src="SegPlayer.js" defer></script>
+</head>
+<body>
+	<div class="vid-container">
+		<video id="video" autoplay="autoplay" muted controls></video>
+	</div>
+</body>
+</html>
+```
