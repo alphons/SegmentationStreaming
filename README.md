@@ -1,16 +1,23 @@
 # SegmentationStreaming
 Smallest live video streaming javascript
 
+## Server
+
 For making segments from a video/audio source the following ffmpeg command line can be used:
 
 ```
 ffmpeg -i "..." -c copy -flags -global_header -hls_time 4 -hls_list_size 5 -master_pl_publish_rate 1 -hls_flags delete_segments -hls_segment_type fmp4 -hls_segment_filename "r:/KEY%d.m4s" -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
 ```
+
 When using mpeg source this produce segments of data which can be served bij a webserver.
+
+The m3u8 file is a playlist showing the latest 5 segments. Earlier segments are automatically deleted. 
+
+## SegPlayer.js
 
 On the client side only the URL of the m3u8 file is used.
 
-The scrupt loads the m3u8 file and initaly searches for the init entry.
+The script loads the m3u8 file and initaly searches for the init entry.
 
 This init segment is fed to the media element on the webpage once.
 
