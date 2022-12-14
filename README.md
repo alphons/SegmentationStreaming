@@ -6,6 +6,7 @@ Smallest live-video streaming javascript implementation
 As of december 2022:
 
 - hls.js 337kB
+- video.js 571kB
 - dash.js 713kB
 - SegPlayer.js 2kB
 
