@@ -1,5 +1,14 @@
 # SegmentationStreaming
-Smallest live video streaming javascript
+Smallest live-video streaming javascript implementation
+
+## The Others
+
+As of december 2022:
+
+- hls.js 337kB
+- dash.js 713kB
+- SegPlayer.js 2kB
+
 
 ## Server
 
