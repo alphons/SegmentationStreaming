@@ -32,9 +32,9 @@ This init segment is fed to the media element on the webpage once.
 
 After this, the script loads the m3u8 file on a regular basis (once every second) searches for new segments, if any, and these are also added to te media element.
 
-When experiencing an 404, the script terminates.
+When experiencing a 404 (not found), the script terminates.
 
-The javascript is programmed Asynschronous.
+The javascript is programmed Asynchronous.
 
 ```javascript
 'use strict';
