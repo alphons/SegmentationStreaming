@@ -8,9 +8,13 @@
 	<link href="SegPlayer.css" rel="stylesheet" />
 	<script src="SegPlayer.js" defer></script>
 	<script>
+		document.addEventListener('VideoEnded', function ()
+		{
+			console.log('The video has ended')
+		});
 		document.addEventListener('DOMContentLoaded', async function ()
 		{
-			await LoadVideoAsync('https://djpodium.com/live/segtest.m3u8');
+			await PlayVideoAsync('https://djpodium.com/live/segtest.m3u8');
 		});
 	</script>
 </head>

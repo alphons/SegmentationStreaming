@@ -1,14 +1,16 @@
 ﻿'use strict';
 
-// SegPlayer.js v1.1 (C) 2022 Alphons van der Heijden
+// SegPlayer.js v1.2 (C) 2022 Alphons van der Heijden
 
-async function LoadVideoAsync(m3u8)
+async function PlayVideoAsync(m3u8)
 {
+	var video = document.getElementById("video");
 	var ms = new MediaSource();
-	ms.addEventListener('sourceopen', async function () { await PlayAsync(m3u8) }, false);
-	document.getElementById("video").src = window.URL.createObjectURL(ms);
+	ms.addEventListener('sourceopen', async function () { await sourceopenasync(m3u8) }, false);
+	const objectURL = window.URL.createObjectURL(ms);
+	video.src = objectURL;
 
-	async function PlayAsync(m3u8)
+	async function sourceopenasync(m3u8)
 	{
 		var sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
 		sb.mode = "sequence";
@@ -62,6 +64,11 @@ async function LoadVideoAsync(m3u8)
 
 			await new Promise(x => setTimeout(x, 1000));
 		}
+		window.URL.revokeObjectURL(objectURL);
+		video.pause();
+		video.removeAttribute('src'); // empty source
+		video.load();
+		document.dispatchEvent(new Event("VideoEnded"));
 	}
 }
 

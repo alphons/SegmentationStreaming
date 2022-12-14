@@ -40,23 +40,22 @@ The javascript is programmed asynchronous.
 ```javascript
 'use strict';
 
-// SegPlayer.js v1.1 (C) 2022 Alphons van der Heijden
+// SegPlayer.js v1.2 (C) 2022 Alphons van der Heijden
 
-async function LoadVideoAsync(m3u8)
+async function PlayVideoAsync(m3u8)
 {
+	var video = document.getElementById("video");
 	var ms = new MediaSource();
-	ms.addEventListener('sourceopen', async function () { await PlayAsync(m3u8) }, false);
-	document.getElementById("video").src = window.URL.createObjectURL(ms);
+	ms.addEventListener('sourceopen', async function () { await sourceopenasync(m3u8) }, false);
+	const objectURL = window.URL.createObjectURL(ms);
+	video.src = objectURL;
 
-	async function PlayAsync(m3u8)
+	async function sourceopenasync(m3u8)
 	{
 		var sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
 		sb.mode = "sequence";
 
-		var i;
-		var queue = [];
-		var archive = [];
-		var initsegment = '';
+		var i, buffer, queue = [], hist = [];
 
 		var baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
 
@@ -70,25 +69,25 @@ async function LoadVideoAsync(m3u8)
 
 			lines.forEach(async function (line)
 			{
-				if (initsegment === '')
+				if (hist.length === 0)
 				{
 					if (line.startsWith('#EXT-X-MAP:URI="'))
 					{
-						initsegment = baseUrl + line.substring(16, line.length - 1);
-						var initBuffer = await (await fetch(initsegment)).arrayBuffer();
-						sb.appendBuffer(initBuffer);
-						return;
+						line = line.substring(16, line.length - 1);
+						hist.push(line)
+						buffer = await (await fetch(baseUrl + line)).arrayBuffer();
+						queue.push(buffer);
 					}
 				}
 				if (line.endsWith(".m4s"))
 				{
-					if (archive.indexOf(line) < 0)
+					if (hist.indexOf(line) < 0)
 					{
-						archive.push(line);
-						if (archive.length > 10)
-							archive.shift();
-						var segmentBuffer = await (await fetch(baseUrl + line)).arrayBuffer();
-						queue.push(segmentBuffer);
+						if (hist.length > 10)
+							hist.shift();
+						hist.push(line);
+						buffer = await (await fetch(baseUrl + line)).arrayBuffer();
+						queue.push(buffer);
 					}
 				}
 			});
@@ -100,11 +99,16 @@ async function LoadVideoAsync(m3u8)
 
 				if (sb.updating === false)
 					sb.appendBuffer(queue.shift());
-				await new Promise(r => setTimeout(r, 10));
+				await new Promise(x => setTimeout(x, 10));
 			}
 
-			await new Promise(r => setTimeout(r, 1000));
+			await new Promise(x => setTimeout(x, 1000));
 		}
+		window.URL.revokeObjectURL(objectURL);
+		video.pause();
+		video.removeAttribute('src'); // empty source
+		video.load();
+		document.dispatchEvent(new Event("VideoEnded"));
 	}
 }
 ```
@@ -122,9 +126,13 @@ Demo html page
 	<link href="SegPlayer.css" rel="stylesheet" />
 	<script src="SegPlayer.js" defer></script>
 	<script>
+		document.addEventListener('VideoEnded', function ()
+		{
+			console.log('The video has ended')
+		});
 		document.addEventListener('DOMContentLoaded', async function ()
 		{
-			await LoadVideoAsync('https://djpodium.com/live/segtest.m3u8');
+			await PlayVideoAsync('https://djpodium.com/live/segtest.m3u8');
 		});
 	</script>
 </head>
