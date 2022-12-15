@@ -64,11 +64,11 @@ async function PlayVideoAsync(m3u8)
 
 			await new Promise(x => setTimeout(x, 1000));
 		}
+		document.dispatchEvent(new Event("VideoEnded"));
 		window.URL.revokeObjectURL(objectURL);
 		video.pause();
 		video.removeAttribute('src'); // empty source
 		video.load();
-		document.dispatchEvent(new Event("VideoEnded"));
 	}
 }
 
