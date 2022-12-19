@@ -13,7 +13,9 @@ As of december 2022:
 
 ## Server (example for live event streaming)
 
-For making segments from a video/audio source the following ffmpeg command line can be used:
+In this solution a .NET Core 7 testing framework is used, but is not needed for the client javascript for playing live video streams.
+
+For making segments from a (live event or videofile) video/audio source the following ffmpeg command line can be used:
 
 ```
 ffmpeg -re -i "..." -c copy -flags -global_header -hls_time 4 -hls_list_size 5 -master_pl_publish_rate 1 -hls_flags delete_segments -hls_segment_type fmp4 -hls_segment_filename "r:/KEY%d.m4s" -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
