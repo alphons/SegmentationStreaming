@@ -2,6 +2,8 @@
 
 // SegPlayer.js v2.0-beta (C) 2022 Alphons van der Heijden
 
+// There is no lock in javascript, 2 routines can not run asynchronous
+
 async function PlayVideoAsync(m3u8)
 {
 	var video = document.getElementById("video");
