@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-// SegPlayer.js v1.2 (C) 2022 Alphons van der Heijden
+// SegPlayer.js v1.3 (C) 2022 Alphons van der Heijden
 
 async function PlayVideoAsync(m3u8)
 {
@@ -15,40 +15,29 @@ async function PlayVideoAsync(m3u8)
 		var sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
 		sb.mode = "sequence";
 
-		var i, buffer, queue = [], hist = [];
+		var i, resp, playlist, buffer, queue = [], hist = [];
 
 		var baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
 
 		while (true)
 		{
-			var playlist = await (await fetch(m3u8)).text();
-			if (playlist === 'StatusCode 404')
+			resp = await fetch(m3u8);
+			if (resp.ok === false)
 				break;
 
-			var lines = playlist.split(/\r?\n/);
+			playlist = await resp.text();
 
-			lines.forEach(async function (line)
+			playlist.split(/\r?\n/).forEach(async function (line)
 			{
-				if (hist.length === 0)
+				if (queue.length === 0 && hist.length === 0)
 				{
 					if (line.startsWith('#EXT-X-MAP:URI="'))
-					{
-						line = line.substring(16, line.length - 1);
-						hist.push(line)
-						buffer = await (await fetch(baseUrl + line)).arrayBuffer();
-						queue.push(buffer);
-					}
+						queue.push(line.substring(16, line.length - 1));
 				}
 				if (line.endsWith(".m4s"))
 				{
 					if (hist.indexOf(line) < 0)
-					{
-						if (hist.length > 10)
-							hist.shift();
-						hist.push(line);
-						buffer = await (await fetch(baseUrl + line)).arrayBuffer();
-						queue.push(buffer);
-					}
+						queue.push(line);
 				}
 			});
 
@@ -57,12 +46,23 @@ async function PlayVideoAsync(m3u8)
 				if (queue.length == 0)
 					break;
 
-				if (sb.updating === false)
-					sb.appendBuffer(queue.shift());
+				var line = queue.shift();
+				hist.push(line);
+				if (hist.length > 10)
+					hist.shift();
+
+				resp = await fetch(baseUrl + line);
+				if (resp.ok)
+				{
+					buffer = await resp.arrayBuffer();
+
+					if (sb.updating === false)
+						sb.appendBuffer(buffer);
+				}
 				await new Promise(x => setTimeout(x, 10));
 			}
 
-			await new Promise(x => setTimeout(x, 1000));
+			await new Promise(x => setTimeout(x, 2000));
 		}
 		document.dispatchEvent(new Event("VideoEnded"));
 		window.URL.revokeObjectURL(objectURL);
