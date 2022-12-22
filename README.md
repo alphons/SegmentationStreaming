@@ -18,7 +18,15 @@ In this solution a .NET Core 7 testing framework is used, but is not needed for 
 For making segments from a (live event or videofile) video/audio source the following ffmpeg command line can be used:
 
 ```
-ffmpeg -re -i "..." -c copy -flags -global_header -hls_time 4 -hls_list_size 5 -master_pl_publish_rate 1 -hls_flags delete_segments -hls_segment_type fmp4 -hls_segment_filename "r:/KEY%d.m4s" -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
+ffmpeg -re -i "..." 
+   -c copy -flags -global_header 
+   -hls_time 4 
+   -hls_list_size 5 
+   -master_pl_publish_rate 1 
+   -hls_flags delete_segments
+   -hls_segment_type fmp4 
+   -hls_segment_filename "r:/KEY%d.m4s" 
+   -hls_fmp4_init_filename "KEY.mp4" "r:/KEY.m3u8"
 ```
 
 When using mpeg source this produce segments of data which can be served bij a webserver.
