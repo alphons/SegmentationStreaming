@@ -3,7 +3,7 @@ Smallest live-video streaming javascript implementation
 
 ## The Others
 
-As of december 2022:
+As of februari 2023:
 
 - hls.js 337kB
 - video.js 571kB
