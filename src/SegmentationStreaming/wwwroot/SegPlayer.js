@@ -4,60 +4,53 @@
 
 async function PlayVideoAsync(m3u8)
 {
-	var video = document.getElementById("video");
-	var ms = new MediaSource();
-	ms.addEventListener('sourceopen', async function () { await sourceopenasync(m3u8) }, false);
+	const video = document.getElementById("video");
+	const ms = new MediaSource();
+	ms.addEventListener('sourceopen', async function () { await sourceOpen(m3u8, ms, objectURL, video) }, { once: true });
 	const objectURL = window.URL.createObjectURL(ms);
 	video.src = objectURL;
 
-	async function sourceopenasync(m3u8)
+	async function sourceOpen(m3u8, ms, objectURL, video)
 	{
-		var sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+		const sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
 		sb.mode = "sequence";
 
-		var i, resp, playlist, buffer, queue = [], hist = [];
-
-		var baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
+		const baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
+		const queue = new Set();
+		const history = new Set();
 
 		while (true)
 		{
-			resp = await fetch(m3u8);
+			const resp = await fetch(m3u8);
 			if (resp.ok === false)
 				break;
 
-			playlist = await resp.text();
+			const playlist = await resp.text();
 
-			playlist.split(/\r?\n/).forEach(async function (line)
+			playlist.split(/\n/).forEach(function (line)
 			{
-				if (queue.length === 0 && hist.length === 0)
+				if (line.startsWith('#EXT-X-MAP:URI="'))
 				{
-					if (line.startsWith('#EXT-X-MAP:URI="'))
-						queue.push(line.substring(16, line.length - 1));
-				}
-				if (line.endsWith(".m4s"))
+					const uri = line.slice(16, -1);
+					if (!history.has(uri)) queue.add(uri);
+				} else if (line.endsWith(".m4s") && !history.has(line))
 				{
-					if (hist.indexOf(line) < 0)
-						queue.push(line);
+					queue.add(line);
 				}
 			});
 
-			for (i = 0; i < 10; i++)
+			for (let i = 0; i < 10 && queue.size > 0; i++)
 			{
-				if (queue.length == 0)
-					break;
+				const line = queue.values().next().value;
+				queue.delete(line);
+				history.add(line);
+				if (history.size > 10) history.delete(history.values().next().value);
 
-				var line = queue.shift();
-				hist.push(line);
-				if (hist.length > 10)
-					hist.shift();
-
-				resp = await fetch(baseUrl + line);
+				const resp = await fetch(baseUrl + line);
 				if (resp.ok)
 				{
-					buffer = await resp.arrayBuffer();
-
-					if (sb.updating === false)
-						sb.appendBuffer(buffer);
+					const buffer = await resp.arrayBuffer();
+					if (!sb.updating) sb.appendBuffer(buffer);
 				}
 				await new Promise(x => setTimeout(x, 10));
 			}
