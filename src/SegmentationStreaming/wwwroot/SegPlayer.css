@@ -45,15 +45,15 @@ body
 
 video::-webkit-media-controls-timeline
 {
-	adisplay:none;
+	display:none;
 }
 
 video::-webkit-media-controls-current-time-display
 {
-	adisplay: none;
+	display: none;
 }
 
 video::-webkit-media-controls-time-remaining-display
 {
-	adisplay: none;
+	display: none;
 }

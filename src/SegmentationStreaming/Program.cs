@@ -10,16 +10,8 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 	ContentRootPath = AppContext.BaseDirectory
 });
 
-builder.Services
-	.AddMvcCore()
-	.WithMultiParameterModelBinding();
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
-
 var app = builder.Build();
 
-app.UseRouting();
-app.UseSession();
 app.UseDefaultFiles();
 
 var provider = new FileExtensionContentTypeProvider();
@@ -27,20 +19,18 @@ var provider = new FileExtensionContentTypeProvider();
 provider.Mappings[".m3u8"] = "application/x-mpegURL";
 provider.Mappings[".m4s"] = "video/iso.segment";
 
-app.UseStaticFiles(new StaticFileOptions
-{
-	ContentTypeProvider = provider,
-	ServeUnknownFileTypes = true,
-	DefaultContentType = "text/plain" // LetsEncrypt !!
-});
+var dir = Directory.Exists(@"d:\Videos\ex") ?
+	@"d:\Videos\ex" :
+	@"f:\Videos\ex";
 
 app.UseStaticFiles(new StaticFileOptions
 {
-	FileProvider = new PhysicalFileProvider(@"d:\Videos\ex"),
+	FileProvider = new PhysicalFileProvider(dir),
 	RequestPath = "/ex",
 	ContentTypeProvider = provider
 });
 
-app.MapControllers();
+app.UseStaticFiles();
 
 app.Run();
+

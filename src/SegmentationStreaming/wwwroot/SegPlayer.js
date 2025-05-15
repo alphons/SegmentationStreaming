@@ -1,68 +1,108 @@
 ﻿'use strict';
 
-// SegPlayer.js v1.3 (C) 2022 Alphons van der Heijden
+// SegPlayer.js v1.4 (C) 2022,2023,2024,2025 Alphons van der Heijden
 
 async function PlayVideoAsync(m3u8)
 {
 	const video = document.getElementById("video");
 	const ms = new MediaSource();
-	ms.addEventListener('sourceopen', async function () { await sourceOpen(m3u8, ms, objectURL, video) }, { once: true });
 	const objectURL = window.URL.createObjectURL(ms);
 	video.src = objectURL;
 
-	async function sourceOpen(m3u8, ms, objectURL, video)
+	ms.addEventListener('sourceopen', async function () { await sourceopenasync(ms, m3u8, video, objectURL) }, { once: true });
+
+	async function sourceopenasync(ms, m3u8, video, objectURL)
 	{
-		const sb = ms.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+		const mimeType = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+		if (!MediaSource.isTypeSupported(mimeType))
+			throw new Error("Unsupported codecs");
+
+		const sb = ms.addSourceBuffer(mimeType);
 		sb.mode = "sequence";
 
-		const baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
-		const queue = new Set();
-		const history = new Set();
+		const queue = [];
+		const hist = [];
+		var storedLastModified;
 
-		while (true)
+		var baseUrl = m3u8.substring(0, m3u8.lastIndexOf("/") + 1);
+
+		async function appendBufferAsync(buffer)
 		{
-			const resp = await fetch(m3u8);
-			if (resp.ok === false)
-				break;
-
-			const playlist = await resp.text();
-
-			playlist.split(/\n/).forEach(function (line)
+			if (sb.updating)
 			{
-				if (line.startsWith('#EXT-X-MAP:URI="'))
-				{
-					const uri = line.slice(16, -1);
-					if (!history.has(uri)) queue.add(uri);
-				} else if (line.endsWith(".m4s") && !history.has(line))
-				{
-					queue.add(line);
-				}
-			});
-
-			for (let i = 0; i < 10 && queue.size > 0; i++)
-			{
-				const line = queue.values().next().value;
-				queue.delete(line);
-				history.add(line);
-				if (history.size > 10) history.delete(history.values().next().value);
-
-				const resp = await fetch(baseUrl + line);
-				if (resp.ok)
-				{
-					const buffer = await resp.arrayBuffer();
-					if (!sb.updating) sb.appendBuffer(buffer);
-				}
-				await new Promise(x => setTimeout(x, 10));
+				await new Promise(resolve => sb.addEventListener('updateend', resolve, { once: true }));
 			}
-
-			await new Promise(x => setTimeout(x, 2000));
+			return new Promise(resolve =>
+			{
+				sb.addEventListener('updateend', resolve, { once: true });
+				sb.appendBuffer(buffer);
+			});
 		}
-		document.dispatchEvent(new Event("VideoEnded"));
-		window.URL.revokeObjectURL(objectURL);
-		video.pause();
-		video.removeAttribute('src'); // empty source
-		video.load();
+
+		try
+		{
+			while (ms.readyState === "open")
+			{
+				const resp = await fetch(m3u8, { method: 'HEAD' });
+				const lastModified = resp.headers.get('Last-Modified');
+
+				if (lastModified !== storedLastModified)
+				{
+					storedLastModified = lastModified;
+
+					const resp = await fetch(m3u8);
+					if (resp.ok === false)
+						break;
+
+					const playlist = await resp.text();
+
+					playlist.split(/\r?\n/).forEach(function (line)
+					{
+						if (queue.length === 0 && hist.length === 0)
+						{
+							if (line.startsWith('#EXT-X-MAP:URI="'))
+								queue.push(line.substring(16, line.length - 1));
+						}
+						if (line.endsWith(".m4s"))
+						{
+							if (hist.indexOf(line) < 0)
+							{
+								queue.push(line);
+								hist.push(line);
+								if (hist.length > 10)
+									hist.shift();
+							}
+						}
+					});
+				}
+
+				while (queue.length > 0)
+				{
+					const bufferedEnd = sb.buffered.length > 0 ? sb.buffered.end(sb.buffered.length - 1) : 0;
+					if (bufferedEnd - video.currentTime > 5)
+						break;
+					const segment = await fetch(baseUrl + queue.shift());
+					if (segment.ok)
+					{
+						const buffer = await segment.arrayBuffer();
+						await appendBufferAsync(buffer);
+					}
+				}
+				
+				await new Promise(x => setTimeout(x, 2000));
+			}
+		}
+		catch (err)
+		{
+			console.error("Streaming error:", err);
+		} finally
+		{
+			ms.endOfStream();
+			window.URL.revokeObjectURL(objectURL);
+			video.pause();
+			video.removeAttribute('src');
+			video.load();
+			document.dispatchEvent(new Event("VideoEnded"));
+		}
 	}
 }
-
-
