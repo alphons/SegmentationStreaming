@@ -35,7 +35,8 @@ async function PlayVideoAsync(m3u8)
 			return new Promise(resolve =>
 			{
 				sb.addEventListener('updateend', resolve, { once: true });
-				sb.appendBuffer(buffer);
+				if(!video.error)
+					sb.appendBuffer(buffer);
 			});
 		}
 
@@ -97,7 +98,8 @@ async function PlayVideoAsync(m3u8)
 			console.error("Streaming error:", err);
 		} finally
 		{
-			ms.endOfStream();
+			if (ms.readyState === "open" && !video.error)
+				ms.endOfStream();
 			window.URL.revokeObjectURL(objectURL);
 			video.pause();
 			video.removeAttribute('src');
