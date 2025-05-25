@@ -8,7 +8,7 @@ As of februari 2023:
 - hls.js 337kB
 - video.js 571kB
 - dash.js 713kB
-- SegPlayer.js 2kB
+- SegPlayer.js 3kB
 
 
 ## Server (example for live event streaming)
@@ -179,7 +179,7 @@ Demo html page
 		});
 		document.addEventListener('DOMContentLoaded', async function ()
 		{
-			await PlayVideoAsync('https://djpodium.com/live/segtest.m3u8');
+			await PlayVideoAsync('http://seg.djpodium.com/ex/index.m3u8');
 		});
 	</script>
 </head>
